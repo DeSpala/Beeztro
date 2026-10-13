@@ -1,13 +1,19 @@
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Beeztrô • Receituário</title><style>
 :root{--bg:#f7f5ee;--paper:#fffdf8;--ink:#243d2e;--muted:#657367;--accent:#d6a53d;--line:#e5e4d8;--green:#355d43}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}header{background:var(--green);color:white;padding:22px max(20px,calc((100vw - 1100px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}h1{font-family:Georgia,serif;font-size:2.3rem;margin:0;letter-spacing:.3px}header small{color:#e8e8d9}main{max-width:1100px;margin:24px auto;padding:0 18px}.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 24px}button,.filebtn{cursor:pointer;border:1px solid var(--line);border-radius:10px;padding:10px 15px;background:white;color:var(--ink);font:inherit}button:hover,.filebtn:hover{border-color:var(--green)}button.primary,.tabs button.active{background:var(--green);color:white;border-color:var(--green)}button.warn{color:#9b302b}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:15px}.card,.panel{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 3px 12px #233e3010}.card h3{margin:0 0 6px;font-family:Georgia,serif;font-size:1.35rem}.sub{color:var(--muted);font-size:.9rem}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.row button{flex:0 0 auto}input,textarea,select{font:inherit;border:1px solid #cbd1c7;border-radius:9px;padding:10px;background:white;color:var(--ink);width:100%}label{display:block;font-size:.9rem;font-weight:650;margin:12px 0 5px}textarea{min-height:110px;resize:vertical}.hidden{display:none!important}.sectiontitle{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:15px}h2{font-family:Georgia,serif;font-size:1.75rem;margin:0}table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}td input{min-width:70px}.scroll{overflow-x:auto}.notice{padding:12px 15px;background:#f6efd7;border-radius:10px;color:#514522;margin:15px 0}.pill{background:#e8eee7;color:#345641;border-radius:20px;padding:3px 9px;font-size:.8rem;display:inline-block;margin:3px 3px 0 0}.stack{display:grid;gap:12px}.right{text-align:right}.small{font-size:.85rem}footer{text-align:center;color:var(--muted);padding:30px} @media(max-width:600px){header{padding:18px}h1{font-size:2rem}.row>*{flex-basis:100%}.row button{flex-basis:auto}td,th{padding:7px 4px;font-size:.9rem}}
-</style></head><body><header><div><h1>Beeztrô <span style="color:#edc96c">✦</span></h1><small>Receitas, cardápios e compras em um só lugar</small></div><span class="small">Versão 0.2 · nuvem</span></header><div id="cloudBar" style="background:#e8eee5;padding:12px 18px;border-bottom:1px solid #cad6c7">
+</style></head><body><header><div><h1>Beeztrô <span style="color:#edc96c">✦</span></h1><small>Receitas, cardápios e compras em um só lugar</small></div><span class="small">Versão 0.3 · recuperação</span></header><div id="cloudBar" style="background:#e8eee5;padding:12px 18px;border-bottom:1px solid #cad6c7">
  <div style="max-width:1100px;margin:auto">
- <strong>Beeztrô na nuvem · versão 0.2</strong>
+ <strong>Beeztrô na nuvem · versão 0.3</strong>
  <span id="cloudStatus" style="margin-left:12px">Desconectado — seus dados locais continuam preservados.</span>
  <div id="cloudLogin" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
  <input id="cloudEmail" type="email" placeholder="Seu e-mail" style="max-width:240px">
  <input id="cloudPassword" type="password" placeholder="Senha do Beeztrô" style="max-width:220px">
- <button onclick="cloudSignIn()">Entrar</button><button onclick="cloudSignUp()">Criar conta</button>
+ <button onclick="cloudSignIn()">Entrar</button><button onclick="cloudSignUp()">Criar conta</button><button onclick="cloudForgotPassword()">Esqueci minha senha</button>
+ </div>
+ <div id="cloudRecovery" class="hidden" style="margin-top:12px;padding:16px;border:1px solid #cad6c7;border-radius:12px;background:#fffdf8;max-width:480px">
+ <strong>Criar nova senha</strong><p class="small">Você abriu um link de recuperação. Digite sua nova senha abaixo.</p>
+ <label for="recoveryPassword">Nova senha (mínimo 8 caracteres)</label><input id="recoveryPassword" type="password" autocomplete="new-password" minlength="8">
+ <label for="recoveryConfirm">Confirmar nova senha</label><input id="recoveryConfirm" type="password" autocomplete="new-password" minlength="8">
+ <div class="actions"><button class="primary" onclick="cloudChangePassword()">Salvar nova senha</button></div>
  </div>
  <div id="cloudActions" style="display:none;margin-top:8px;gap:8px;flex-wrap:wrap">
  <button onclick="cloudLoad()">Carregar dados da nuvem</button>
@@ -31,7 +37,7 @@ function normalizeUnit(u){let v=u.trim().toLowerCase();return({kg:['massa',1000,
 
 const CLOUD_URL='https://bguqkcwrrdhnwhrvkwyp.supabase.co';
 const CLOUD_KEY='sb_publishable_PU08gbtSGQKq39rYLjZS8A_plCE_vbW';
-let cloudSession=null,cloudBusy=false,cloudReady=false;
+let cloudSession=null,cloudBusy=false,cloudReady=false,recoveryToken=null;
 function cloudMsg(msg){document.getElementById('cloudStatus').textContent=msg}
 function cloudHeaders(token){return {'apikey':CLOUD_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'}}
 async function cloudRequest(path,method='GET',body=null,token=null){
@@ -39,6 +45,48 @@ async function cloudRequest(path,method='GET',body=null,token=null){
  const txt=await res.text();let data;try{data=txt?JSON.parse(txt):null}catch{data=txt}
  if(!res.ok)throw Error(data?.msg||data?.message||data?.error_description||data?.error||'Erro HTTP '+res.status);
  return data;
+}
+async function cloudForgotPassword(){
+ const email=document.getElementById('cloudEmail').value.trim();
+ if(!email)return alert('Digite seu e-mail no campo acima.');
+ try{
+  await cloudRequest('/auth/v1/recover','POST',{email});
+  alert('Se esse e-mail estiver cadastrado, você receberá um link de recuperação. Confira também o spam.');
+ }catch(e){alert('Não foi possível solicitar a recuperação: '+e.message)}
+}
+function cloudCheckRecovery(){
+ const hash=new URLSearchParams(location.hash.slice(1));
+ const query=new URLSearchParams(location.search);
+ if(hash.get('type')==='recovery' && hash.get('access_token')){
+  recoveryToken=hash.get('access_token');
+  // Apaga imediatamente os tokens da barra de endereço e do histórico visível.
+  history.replaceState(null,'',location.pathname);
+  document.getElementById('cloudRecovery').classList.remove('hidden');
+  document.getElementById('cloudLogin').classList.add('hidden');
+  cloudMsg('Link de recuperação reconhecido. Crie uma nova senha abaixo.');
+ }else if(hash.get('error')||query.get('error')){
+  const description=hash.get('error_description')||query.get('error_description')||'Link inválido ou expirado.';
+  history.replaceState(null,'',location.pathname);
+  cloudMsg('Não foi possível usar o link: '+description.replaceAll('+',' '));
+ }
+}
+async function cloudChangePassword(){
+ const password=document.getElementById('recoveryPassword').value;
+ const confirmPassword=document.getElementById('recoveryConfirm').value;
+ if(password.length<8)return alert('A nova senha precisa ter pelo menos 8 caracteres.');
+ if(password!==confirmPassword)return alert('As duas senhas não coincidem.');
+ if(!recoveryToken)return alert('O link de recuperação não está ativo. Solicite outro.');
+ try{
+  await cloudRequest('/auth/v1/user','PUT',{password},recoveryToken);
+  // Revoga o token de atualização dessa sessão, quando disponível, após troca.
+  recoveryToken=null;
+  document.getElementById('recoveryPassword').value='';
+  document.getElementById('recoveryConfirm').value='';
+  document.getElementById('cloudRecovery').classList.add('hidden');
+  document.getElementById('cloudLogin').classList.remove('hidden');
+  cloudMsg('Senha alterada! Agora entre com seu e-mail e sua nova senha.');
+  alert('Senha alterada com sucesso! Faça login com sua nova senha.');
+ }catch(e){alert('Não foi possível alterar a senha: '+e.message)}
 }
 async function cloudSignUp(){
  let email=document.getElementById('cloudEmail').value.trim(),password=document.getElementById('cloudPassword').value;
@@ -100,4 +148,5 @@ persist=function(){
  },700);
 };
 cloudUI();
+cloudCheckRecovery();
 </script></body></html>
