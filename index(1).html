@@ -1,0 +1,192 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Beeztrô • Receituário</title><style>
+:root{--bg:#f7f5ee;--paper:#fffdf8;--ink:#243d2e;--muted:#657367;--accent:#d6a53d;--line:#e5e4d8;--green:#355d43}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}header{background:var(--green);color:white;padding:22px max(20px,calc((100vw - 1100px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}h1{font-family:Georgia,serif;font-size:2.3rem;margin:0;letter-spacing:.3px}header small{color:#e8e8d9}main{max-width:1100px;margin:24px auto;padding:0 18px}.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 24px}button,.filebtn{cursor:pointer;border:1px solid var(--line);border-radius:10px;padding:10px 15px;background:white;color:var(--ink);font:inherit}button:hover,.filebtn:hover{border-color:var(--green)}button.primary,.tabs button.active{background:var(--green);color:white;border-color:var(--green)}button.warn{color:#9b302b}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:15px}.card,.panel{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 3px 12px #233e3010}.card h3{margin:0 0 6px;font-family:Georgia,serif;font-size:1.35rem}.sub{color:var(--muted);font-size:.9rem}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.row button{flex:0 0 auto}input,textarea,select{font:inherit;border:1px solid #cbd1c7;border-radius:9px;padding:10px;background:white;color:var(--ink);width:100%}label{display:block;font-size:.9rem;font-weight:650;margin:12px 0 5px}textarea{min-height:110px;resize:vertical}.hidden{display:none!important}.sectiontitle{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:15px}h2{font-family:Georgia,serif;font-size:1.75rem;margin:0}table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}td input{min-width:70px}.scroll{overflow-x:auto}.notice{padding:12px 15px;background:#f6efd7;border-radius:10px;color:#514522;margin:15px 0}.pill{background:#e8eee7;color:#345641;border-radius:20px;padding:3px 9px;font-size:.8rem;display:inline-block;margin:3px 3px 0 0}.stack{display:grid;gap:12px}.right{text-align:right}.small{font-size:.85rem}footer{text-align:center;color:var(--muted);padding:30px} @media(max-width:600px){header{padding:18px}h1{font-size:2rem}.row>*{flex-basis:100%}.row button{flex-basis:auto}td,th{padding:7px 4px;font-size:.9rem}}
+</style></head><body><header><div><h1>Beeztrô <span style="color:#edc96c">✦</span></h1><small>Receitas, cardápios e compras em um só lugar</small></div><span class="small">Versão 0.4 · sessão e sincronização</span></header><div id="cloudBar" style="background:#e8eee5;padding:12px 18px;border-bottom:1px solid #cad6c7">
+ <div style="max-width:1100px;margin:auto">
+ <strong>Beeztrô na nuvem · versão 0.4</strong>
+ <span id="cloudStatus" style="margin-left:12px">Desconectado — seus dados locais continuam preservados.</span>
+ <div id="cloudLogin" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+ <input id="cloudEmail" type="email" placeholder="Seu e-mail" style="max-width:240px">
+ <input id="cloudPassword" type="password" placeholder="Senha do Beeztrô" style="max-width:220px">
+ <button onclick="cloudSignIn()">Entrar</button><button onclick="cloudSignUp()">Criar conta</button><button onclick="cloudForgotPassword()">Esqueci minha senha</button>
+ </div>
+ <div id="cloudRecovery" class="hidden" style="margin-top:12px;padding:16px;border:1px solid #cad6c7;border-radius:12px;background:#fffdf8;max-width:480px">
+ <strong>Criar nova senha</strong><p class="small">Você abriu um link de recuperação. Digite sua nova senha abaixo.</p>
+ <label for="recoveryPassword">Nova senha (mínimo 8 caracteres)</label><input id="recoveryPassword" type="password" autocomplete="new-password" minlength="8">
+ <label for="recoveryConfirm">Confirmar nova senha</label><input id="recoveryConfirm" type="password" autocomplete="new-password" minlength="8">
+ <div class="actions"><button class="primary" onclick="cloudChangePassword()">Salvar nova senha</button></div>
+ </div>
+ <div id="cloudActions" style="display:none;margin-top:8px;gap:8px;flex-wrap:wrap">
+ <button onclick="cloudLoad()">Carregar dados da nuvem</button>
+ <button onclick="cloudUploadLocal()">Enviar dados locais para a nuvem</button>
+ <button onclick="cloudSignOut()">Sair</button>
+ </div>
+ <p style="font-size:12px;margin:6px 0 0">Faça backup JSON regularmente. Antes de alternar dispositivos, confirme que a sincronização terminou. Não edite simultaneamente em dois dispositivos.</p>
+ </div></div><main><div class="tabs"><button class="active" data-tab="recipes">Receituário</button><button data-tab="menus">Cardápios</button><button data-tab="shopping">Compras</button><button data-tab="backup">Importar / Backup</button></div>
+<section id="recipes"><div class="sectiontitle"><h2>Meu receituário</h2><button class="primary" onclick="newRecipe()">+ Nova receita</button></div><input id="search" placeholder="Buscar por nome, categoria ou ingrediente..." oninput="renderRecipes()" aria-label="Buscar receitas"><div id="recipeCards" class="grid" style="margin-top:18px"></div></section>
+<section id="editor" class="hidden"><div class="sectiontitle"><h2 id="editTitle">Nova receita</h2><button onclick="showTab('recipes')">Voltar</button></div><div class="panel"><div class="row"><div><label>Nome da receita</label><input id="rName" required placeholder="Ex.: Chana masala"></div><div><label>Categoria / etiquetas (separadas por vírgula)</label><input id="rTags" placeholder="Vegano, principal, indiano"></div></div><div class="row"><div><label>Rendimento original</label><input id="rYield" type="number" min="0.01" step="any" value="4"></div><div><label>Unidade de rendimento</label><input id="rYieldUnit" placeholder="porções" value="porções"></div></div><label>Ingredientes</label><div class="scroll"><table><thead><tr><th>Ingrediente</th><th>Qtd.</th><th>Unidade</th><th></th></tr></thead><tbody id="ingredients"></tbody></table></div><button onclick="addIngredient()">+ Ingrediente</button><label>Modo de preparo</label><textarea id="rSteps"></textarea><label>Observações / conservação</label><textarea id="rNotes" style="min-height:70px"></textarea><div class="actions"><button class="primary" onclick="saveRecipe()">Salvar receita</button><button onclick="showTab('recipes')">Cancelar</button></div></div></section>
+<section id="detail" class="hidden"><div class="sectiontitle"><h2 id="dName"></h2><button onclick="showTab('recipes')">Voltar</button></div><div class="panel"><div id="dTags"></div><div class="row"><div><label>Recalcular para</label><input type="number" id="dYield" min="0.01" step="any" oninput="renderDetailIngredients()"></div><div><label>Unidade</label><div id="dUnit" style="padding:11px 0"></div></div></div><div id="dIngredients" class="scroll"></div><h3>Preparo</h3><p id="dSteps" style="white-space:pre-wrap"></p><h3>Observações</h3><p id="dNotes" style="white-space:pre-wrap"></p><div class="actions"><button class="primary" onclick="editRecipe(activeRecipe)">Editar</button><button onclick="duplicateRecipe(activeRecipe)">Duplicar</button><button class="warn" onclick="deleteRecipe(activeRecipe)">Excluir</button></div></div></section>
+<section id="menus" class="hidden"><div class="sectiontitle"><h2>Cardápios</h2><button class="primary" onclick="newMenu()">+ Novo cardápio</button></div><div id="menuCards" class="grid"></div></section>
+<section id="menuEditor" class="hidden"><div class="sectiontitle"><h2 id="menuTitle">Montar cardápio</h2><button onclick="showTab('menus')">Voltar</button></div><div class="panel"><label>Nome do cardápio / cliente</label><input id="mName" placeholder="Ex.: Atendimento 20/10"><h3>Preparações</h3><div class="scroll"><table><thead><tr><th>Receita</th><th>Rendimento desejado</th><th></th></tr></thead><tbody id="menuItems"></tbody></table></div><button onclick="addMenuItem()">+ Adicionar receita</button><div class="actions"><button class="primary" onclick="saveMenu()">Salvar cardápio</button><button onclick="showTab('menus')">Cancelar</button></div></div></section>
+<section id="shopping" class="hidden"><div class="sectiontitle"><h2>Lista de compras</h2><button onclick="window.print()">Imprimir página</button></div><div class="panel"><label>Selecione um cardápio salvo</label><select id="shoppingMenu" onchange="renderShopping()"></select><div class="notice small">Ingredientes são somados quando têm o mesmo nome e unidades compatíveis (g/kg, ml/l). Confira conversões culinárias e perdas antes de comprar.</div><div id="shoppingList"></div><div class="actions"><button class="primary" onclick="downloadShoppingCSV()">Exportar CSV</button><button onclick="copyShopping()">Copiar lista</button></div></div></section>
+<section id="backup" class="hidden"><div class="sectiontitle"><h2>Importação e backup</h2></div><div class="panel stack"><p>Exporte todos os seus dados para um arquivo JSON. Para importar, selecione um backup do Beeztrô ou um CSV de receitas no formato indicado abaixo.</p><div class="actions"><button class="primary" onclick="exportBackup()">Baixar backup JSON</button><label class="filebtn" style="margin:0">Importar JSON / CSV<input type="file" id="importFile" accept=".json,.csv" style="display:none" onchange="importFile(event)"></label></div><div class="notice small"><strong>Formato CSV:</strong> colunas <code>nome,categorias,rendimento,unidade_rendimento,ingredientes,preparo,observacoes</code>. Na coluna ingredientes, separe cada item com <code>|</code>, no formato <code>nome:quantidade:unidade</code>. Ex.: <code>Grão-de-bico:500:g|Sal:10:g</code>.</div><p class="sub">Importações são revisadas e confirmadas antes de substituir ou acrescentar dados. Faça backups frequentes.</p></div></section>
+</main><footer>Beeztrô • Primeira versão local • Seus dados ficam neste navegador até configurarmos a sincronização.</footer>
+<script>
+const KEY='beeztrô-v01';let db=load(),activeRecipe=null,editingRecipe=null,editingMenu=null;function load(){try{return JSON.parse(localStorage.getItem(KEY))||{recipes:[],menus:[]}}catch{return{recipes:[],menus:[]}}}function persist(){localStorage.setItem(KEY,JSON.stringify(db))}function uid(){return String(Date.now())+Math.random().toString(36).slice(2,7)}function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function showTab(tab){for(const el of document.querySelectorAll('main>section'))el.classList.add('hidden');document.getElementById(tab).classList.remove('hidden');document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));if(tab==='recipes')renderRecipes();if(tab==='menus')renderMenus();if(tab==='shopping')renderShopping();window.scrollTo(0,0)}document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));function fmt(n){return Number(n.toFixed(3)).toLocaleString('pt-BR',{maximumFractionDigits:3})}function renderRecipes(){let q=document.getElementById('search').value.toLowerCase();let found=db.recipes.filter(r=>(r.name+' '+r.tags+' '+r.ingredients.map(i=>i.name).join(' ')).toLowerCase().includes(q));document.getElementById('recipeCards').innerHTML=found.length?found.map(r=>`<article class="card"><h3>${esc(r.name)}</h3><div class="sub">${fmt(+r.yield)} ${esc(r.yieldUnit)}</div><div>${r.tags.split(',').filter(Boolean).map(t=>`<span class="pill">${esc(t.trim())}</span>`).join('')}</div><div class="actions"><button onclick="openRecipe('${r.id}')">Abrir receita</button><button onclick="editRecipe('${r.id}')">Editar</button></div></article>`).join(''):'<div class="panel">Nenhuma receita encontrada. Cadastre a primeira!</div>'}function addIngredient(item={}){let tr=document.createElement('tr');tr.innerHTML=`<td><input class="iName" placeholder="Ingrediente" value="${esc(item.name||'')}"></td><td><input class="iQty" type="number" min="0" step="any" value="${esc(item.qty??'')}"></td><td><input class="iUnit" placeholder="g, ml, un..." value="${esc(item.unit||'')}"></td><td><button aria-label="Remover ingrediente" onclick="this.closest('tr').remove()">×</button></td>`;document.getElementById('ingredients').appendChild(tr)}function newRecipe(){editingRecipe=null;document.getElementById('editTitle').textContent='Nova receita';for(let id of ['rName','rTags','rSteps','rNotes'])document.getElementById(id).value='';document.getElementById('rYield').value=4;document.getElementById('rYieldUnit').value='porções';document.getElementById('ingredients').innerHTML='';addIngredient();showTab('editor')}function editRecipe(id){let r=db.recipes.find(x=>x.id===id);if(!r)return;editingRecipe=id;document.getElementById('editTitle').textContent='Editar receita';document.getElementById('rName').value=r.name;document.getElementById('rTags').value=r.tags;document.getElementById('rYield').value=r.yield;document.getElementById('rYieldUnit').value=r.yieldUnit;document.getElementById('rSteps').value=r.steps;document.getElementById('rNotes').value=r.notes;document.getElementById('ingredients').innerHTML='';r.ingredients.forEach(addIngredient);showTab('editor')}function saveRecipe(){let name=document.getElementById('rName').value.trim(),yieldNum=+document.getElementById('rYield').value;if(!name||!(yieldNum>0))return alert('Informe o nome e um rendimento maior que zero.');let ingredients=[...document.querySelectorAll('#ingredients tr')].map(tr=>({name:tr.querySelector('.iName').value.trim(),qty:+tr.querySelector('.iQty').value,unit:tr.querySelector('.iUnit').value.trim()})).filter(x=>x.name);if(ingredients.some(x=>!Number.isFinite(x.qty)||x.qty<0))return alert('Verifique as quantidades.');let r={id:editingRecipe||uid(),name,tags:document.getElementById('rTags').value.trim(),yield:yieldNum,yieldUnit:document.getElementById('rYieldUnit').value.trim()||'porções',ingredients,steps:document.getElementById('rSteps').value,notes:document.getElementById('rNotes').value};if(editingRecipe)db.recipes=db.recipes.map(x=>x.id===editingRecipe?r:x);else db.recipes.push(r);persist();showTab('recipes')}function openRecipe(id){activeRecipe=id;let r=db.recipes.find(x=>x.id===id);if(!r)return;document.getElementById('dName').textContent=r.name;document.getElementById('dTags').innerHTML=r.tags.split(',').filter(Boolean).map(t=>`<span class="pill">${esc(t.trim())}</span>`).join('');document.getElementById('dYield').value=r.yield;document.getElementById('dUnit').textContent=r.yieldUnit;document.getElementById('dSteps').textContent=r.steps||'Não informado';document.getElementById('dNotes').textContent=r.notes||'Não informado';renderDetailIngredients();showTab('detail')}function renderDetailIngredients(){let r=db.recipes.find(x=>x.id===activeRecipe);if(!r)return;let factor=(+document.getElementById('dYield').value||r.yield)/r.yield;document.getElementById('dIngredients').innerHTML=`<table><thead><tr><th>Ingrediente</th><th>Quantidade ajustada</th></tr></thead><tbody>${r.ingredients.map(i=>`<tr><td>${esc(i.name)}</td><td>${fmt(i.qty*factor)} ${esc(i.unit)}</td></tr>`).join('')}</tbody></table>`}function duplicateRecipe(id){let r=db.recipes.find(x=>x.id===id);if(!r)return;db.recipes.push({...structuredClone(r),id:uid(),name:r.name+' (cópia)'});persist();showTab('recipes')}function deleteRecipe(id){if(!confirm('Excluir esta receita? Ela também será removida dos cardápios salvos.'))return;db.recipes=db.recipes.filter(x=>x.id!==id);db.menus.forEach(m=>m.items=m.items.filter(x=>x.recipeId!==id));persist();showTab('recipes')}
+function renderMenus(){document.getElementById('menuCards').innerHTML=db.menus.length?db.menus.map(m=>`<article class="card"><h3>${esc(m.name)}</h3><div class="sub">${m.items.length} preparações</div><div class="actions"><button onclick="editMenu('${m.id}')">Editar</button><button onclick="selectShopping('${m.id}')">Gerar compras</button><button class="warn" onclick="deleteMenu('${m.id}')">Excluir</button></div></article>`).join(''):'<div class="panel">Nenhum cardápio salvo. Crie um para gerar uma lista de compras.</div>'}function newMenu(){editingMenu=null;document.getElementById('menuTitle').textContent='Novo cardápio';document.getElementById('mName').value='';document.getElementById('menuItems').innerHTML='';addMenuItem();showTab('menuEditor')}function addMenuItem(item={}){if(!db.recipes.length)return alert('Cadastre ao menos uma receita primeiro.');let tr=document.createElement('tr');tr.innerHTML=`<td><select class="menuRecipe">${db.recipes.map(r=>`<option value="${r.id}" ${item.recipeId===r.id?'selected':''}>${esc(r.name)}</option>`).join('')}</select></td><td><input class="menuYield" type="number" min="0.01" step="any" value="${esc(item.yield??db.recipes.find(r=>r.id===(item.recipeId||db.recipes[0].id))?.yield??1)}"></td><td><button onclick="this.closest('tr').remove()">×</button></td>`;document.getElementById('menuItems').appendChild(tr);tr.querySelector('select').onchange=()=>{tr.querySelector('.menuYield').value=db.recipes.find(r=>r.id===tr.querySelector('select').value)?.yield||1}}function editMenu(id){let m=db.menus.find(x=>x.id===id);if(!m)return;editingMenu=id;document.getElementById('menuTitle').textContent='Editar cardápio';document.getElementById('mName').value=m.name;document.getElementById('menuItems').innerHTML='';m.items.forEach(addMenuItem);showTab('menuEditor')}function saveMenu(){let name=document.getElementById('mName').value.trim();if(!name)return alert('Dê um nome ao cardápio.');let items=[...document.querySelectorAll('#menuItems tr')].map(tr=>({recipeId:tr.querySelector('.menuRecipe').value,yield:+tr.querySelector('.menuYield').value}));if(items.some(x=>!(x.yield>0)))return alert('Os rendimentos precisam ser maiores que zero.');let m={id:editingMenu||uid(),name,items};if(editingMenu)db.menus=db.menus.map(x=>x.id===editingMenu?m:x);else db.menus.push(m);persist();showTab('menus')}function deleteMenu(id){if(!confirm('Excluir cardápio?'))return;db.menus=db.menus.filter(x=>x.id!==id);persist();renderMenus()}function selectShopping(id){showTab('shopping');document.getElementById('shoppingMenu').value=id;renderShopping()}
+function normalizeUnit(u){let v=u.trim().toLowerCase();return({kg:['massa',1000,'g'],g:['massa',1,'g'],l:['volume',1000,'ml'],ml:['volume',1,'ml'],un:['unidade',1,'un'],unidade:['unidade',1,'un'],unidades:['unidade',1,'un']})[v]||[v,1,u]}function shoppingData(){let m=db.menus.find(x=>x.id===document.getElementById('shoppingMenu').value);if(!m)return[];let sums=new Map();for(let item of m.items){let r=db.recipes.find(x=>x.id===item.recipeId);if(!r)continue;for(let i of r.ingredients){let [dimension,mult,unit]=normalizeUnit(i.unit);let key=i.name.trim().toLocaleLowerCase('pt-BR')+'|'+dimension;let entry=sums.get(key)||{name:i.name,qty:0,unit};entry.qty+=i.qty*(item.yield/r.yield)*mult;sums.set(key,entry)}}return [...sums.values()].sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'))}function renderShopping(){let s=document.getElementById('shoppingMenu'),previous=s.value;s.innerHTML=db.menus.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('');if(db.menus.some(m=>m.id===previous))s.value=previous;let rows=shoppingData();document.getElementById('shoppingList').innerHTML=rows.length?`<div class="scroll"><table><thead><tr><th>✓</th><th>Ingrediente</th><th>Quantidade</th></tr></thead><tbody>${rows.map(i=>`<tr><td><input type="checkbox" style="width:auto"></td><td>${esc(i.name)}</td><td>${fmt(i.qty)} ${esc(i.unit)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="sub">Selecione um cardápio com receitas para visualizar a lista.</p>'}function download(name,content,type){let a=document.createElement('a'),url=URL.createObjectURL(new Blob([content],{type}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}function exportBackup(){download('beeztrô-backup.json',JSON.stringify(db,null,2),'application/json')}function downloadShoppingCSV(){let rows=shoppingData(),csv='Ingrediente;Quantidade;Unidade\n'+rows.map(i=>[i.name,fmt(i.qty),i.unit].map(x=>'"'+String(x).replaceAll('"','""')+'"').join(';')).join('\n');download('beeztrô-compras.csv','\ufeff'+csv,'text/csv;charset=utf-8')}async function copyShopping(){let t=shoppingData().map(i=>`☐ ${i.name}: ${fmt(i.qty)} ${i.unit}`).join('\n');try{await navigator.clipboard.writeText(t);alert('Lista copiada!')}catch{alert('Não foi possível copiar automaticamente neste navegador.')}}function parseCSV(text){let lines=text.replace(/^\ufeff/,'').trim().split(/\r?\n/);let delimiter=lines[0].includes(';')?';':',';function cells(line){let out=[],current='',quote=false;for(let i=0;i<line.length;i++){let c=line[i];if(c==='"'&&line[i+1]==='"'&&quote){current+='"';i++}else if(c==='"'){quote=!quote}else if(c===delimiter&&!quote){out.push(current);current=''}else current+=c}out.push(current);return out}let head=cells(lines.shift()).map(x=>x.trim().toLowerCase());if(!head.includes('nome')||!head.includes('ingredientes'))throw Error('CSV sem colunas nome e ingredientes');return lines.filter(Boolean).map(line=>{let data=Object.fromEntries(cells(line).map((v,i)=>[head[i],v]));return{id:uid(),name:data.nome||'',tags:data.categorias||'',yield:Number((data.rendimento||'4').replace(',','.')),yieldUnit:data.unidade_rendimento||'porções',ingredients:(data.ingredientes||'').split('|').filter(Boolean).map(x=>{let p=x.split(':');return{name:p[0].trim(),qty:Number((p[1]||'0').replace(',','.')),unit:(p[2]||'').trim()}}),steps:data.preparo||'',notes:data.observacoes||''}})}async function importFile(ev){let file=ev.target.files[0];if(!file)return;try{let text=await file.text(),incoming=file.name.toLowerCase().endsWith('.json')?JSON.parse(text):{recipes:parseCSV(text),menus:[]};if(!Array.isArray(incoming.recipes)||!Array.isArray(incoming.menus))throw Error('Estrutura inválida');if(incoming.recipes.some(r=>!r.name||!(r.yield>0)||!Array.isArray(r.ingredients)))throw Error('Alguma receita não tem nome, rendimento válido ou ingredientes');let replace=confirm(`Arquivo com ${incoming.recipes.length} receitas e ${incoming.menus.length} cardápios.\n\nOK = SUBSTITUIR todos os dados atuais.\nCancelar = não importar.\n\nFaça um backup antes de substituir.`);if(!replace)return;db=incoming;persist();alert('Importação concluída.');showTab('recipes')}catch(e){alert('Erro na importação: '+e.message)}finally{ev.target.value=''}}renderRecipes();
+
+const CLOUD_URL='https://bguqkcwrrdhnwhrvkwyp.supabase.co';
+const CLOUD_KEY='sb_publishable_PU08gbtSGQKq39rYLjZS8A_plCE_vbW';
+const SESSION_KEY='beeztro-session-v04';
+let cloudSession=null,cloudReady=false,recoveryToken=null,cloudBaseline=null;
+let cloudSaveTimer=null,cloudSaveChain=Promise.resolve(),refreshPromise=null;
+const el=id=>document.getElementById(id);
+function cloudMsg(message){el('cloudStatus').textContent=message}
+function cloudHeaders(token,extra={}){return {'apikey':CLOUD_KEY,'Authorization':'Bearer '+(token||CLOUD_KEY),'Content-Type':'application/json',...extra}}
+async function cloudRequest(path,method='GET',body=null,token=null,extraHeaders={}){
+ const res=await fetch(CLOUD_URL+path,{method,headers:cloudHeaders(token,extraHeaders),...(body===null?{}:{body:JSON.stringify(body)})});
+ const txt=await res.text();let data;try{data=txt?JSON.parse(txt):null}catch{data=txt}
+ if(!res.ok){const error=new Error(data?.msg||data?.message||data?.error_description||data?.error||'Erro HTTP '+res.status);error.status=res.status;throw error}
+ return data;
+}
+function saveSession(){try{if(cloudSession)sessionStorage.setItem(SESSION_KEY,JSON.stringify(cloudSession));else sessionStorage.removeItem(SESSION_KEY)}catch{}}
+function cloudUI(){
+ el('cloudLogin').style.display=cloudSession?'none':'flex';
+ el('cloudActions').style.display=cloudSession?'flex':'none';
+ if(!cloudSession)cloudMsg('Desconectado — receitas deste navegador preservadas.');
+}
+function isExpired(){return !cloudSession?.access_token||!cloudSession.expires_at||Date.now()/1000>=Number(cloudSession.expires_at)-120}
+async function refreshSession(){
+ if(refreshPromise)return refreshPromise;
+ refreshPromise=(async()=>{
+  if(!cloudSession?.refresh_token)throw Error('Sessão encerrada. Entre novamente.');
+  const d=await cloudRequest('/auth/v1/token?grant_type=refresh_token','POST',{refresh_token:cloudSession.refresh_token});
+  cloudSession={...cloudSession,...d,expires_at:d.expires_at||(Math.floor(Date.now()/1000)+d.expires_in)};
+  saveSession();return cloudSession.access_token;
+ })();
+ try{return await refreshPromise}finally{refreshPromise=null}
+}
+async function authorizedRequest(path,method='GET',body=null,extraHeaders={}){
+ if(!cloudSession)throw Error('Entre na sua conta primeiro.');
+ if(isExpired())await refreshSession();
+ try{return await cloudRequest(path,method,body,cloudSession.access_token,extraHeaders)}
+ catch(e){if(e.status===401||/jwt expired|invalid jwt/i.test(e.message)){await refreshSession();return cloudRequest(path,method,body,cloudSession.access_token,extraHeaders)}throw e}
+}
+async function cloudForgotPassword(){
+ const email=el('cloudEmail').value.trim();if(!email)return alert('Digite seu e-mail no campo acima.');
+ try{await cloudRequest('/auth/v1/recover','POST',{email});alert('Se esse e-mail estiver cadastrado, você receberá um link de recuperação. Confira também o spam.')}
+ catch(e){alert('Não foi possível solicitar a recuperação: '+e.message)}
+}
+function cloudCheckRecovery(){
+ const hash=new URLSearchParams(location.hash.slice(1)),query=new URLSearchParams(location.search);
+ if(hash.get('type')==='recovery'&&hash.get('access_token')){
+  recoveryToken=hash.get('access_token');history.replaceState(null,'',location.pathname);
+  el('cloudRecovery').classList.remove('hidden');el('cloudLogin').classList.add('hidden');
+  cloudMsg('Link de recuperação reconhecido. Crie sua nova senha abaixo.');
+ }else if(hash.get('error')||query.get('error')){
+  const desc=hash.get('error_description')||query.get('error_description')||'Link inválido ou expirado.';
+  history.replaceState(null,'',location.pathname);cloudMsg('Não foi possível usar o link: '+desc.replaceAll('+',' '));
+ }
+}
+async function cloudChangePassword(){
+ const password=el('recoveryPassword').value,confirmation=el('recoveryConfirm').value;
+ if(password.length<8)return alert('A nova senha precisa ter pelo menos 8 caracteres.');
+ if(password!==confirmation)return alert('As senhas não coincidem.');
+ if(!recoveryToken)return alert('Link de recuperação não está ativo. Solicite outro.');
+ try{
+  await cloudRequest('/auth/v1/user','PUT',{password},recoveryToken);recoveryToken=null;
+  el('recoveryPassword').value='';el('recoveryConfirm').value='';
+  el('cloudRecovery').classList.add('hidden');el('cloudLogin').classList.remove('hidden');
+  cloudMsg('Senha alterada! Entre com seu e-mail e sua nova senha.');alert('Senha alterada. Faça login com sua nova senha.');
+ }catch(e){alert('Não foi possível alterar a senha: '+e.message)}
+}
+async function cloudSignUp(){
+ const email=el('cloudEmail').value.trim(),password=el('cloudPassword').value;
+ if(!email||password.length<8)return alert('Informe e-mail e senha com pelo menos 8 caracteres.');
+ try{await cloudRequest('/auth/v1/signup','POST',{email,password});alert('Cadastro solicitado. Verifique seu e-mail para confirmar a conta.')}
+ catch(e){alert('Erro ao cadastrar: '+e.message)}
+}
+async function cloudSignIn(){
+ const email=el('cloudEmail').value.trim(),password=el('cloudPassword').value;
+ try{
+  const d=await cloudRequest('/auth/v1/token?grant_type=password','POST',{email,password});
+  cloudSession={...d,expires_at:d.expires_at||(Math.floor(Date.now()/1000)+d.expires_in)};
+  saveSession();cloudReady=false;cloudBaseline=null;cloudUI();el('cloudPassword').value='';
+  const remote=await cloudGetState();
+  cloudMsg(remote?'Conectado. Há dados na nuvem. Clique em “Carregar dados da nuvem” antes de editar neste dispositivo.':'Conectado. Nuvem vazia. Faça backup JSON e use “Enviar dados locais para a nuvem”.');
+ }catch(e){alert('Não foi possível entrar: '+e.message)}
+}
+async function cloudSignOut(){
+ if(cloudReady&&cloudSaveTimer){clearTimeout(cloudSaveTimer);cloudSaveTimer=null;await queueCloudSave()}
+ if(cloudSession){try{await authorizedRequest('/auth/v1/logout','POST',{})}catch(e){console.warn('Não foi possível revogar a sessão no servidor:',e.message)}}
+ cloudSession=null;cloudReady=false;cloudBaseline=null;saveSession();cloudUI();
+}
+async function cloudGetState(){
+ const data=await authorizedRequest('/rest/v1/beeztro_state?select=data,updated_at&user_id=eq.'+encodeURIComponent(cloudSession.user.id));
+ return data?.[0]||null;
+}
+function sameData(a,b){return JSON.stringify(a)===JSON.stringify(b)}
+async function cloudLoad(){
+ try{
+  const remote=await cloudGetState();if(!remote)return alert('Ainda não há dados na nuvem.');
+  if(!Array.isArray(remote.data?.recipes)||!Array.isArray(remote.data?.menus))throw Error('Dados da nuvem inválidos.');
+  if(!confirm('Isso SUBSTITUI as receitas deste navegador. Você já baixou um backup JSON?'))return;
+  clearTimeout(cloudSaveTimer);cloudSaveTimer=null;
+  db=remote.data;localStorage.setItem(KEY,JSON.stringify(db));
+  cloudBaseline=remote.updated_at;cloudReady=true;showTab('recipes');
+  cloudMsg('Dados carregados. Sincronização ativa; alterações serão enviadas à nuvem.');
+ }catch(e){cloudMsg('Falha ao carregar: '+e.message);alert('Erro ao carregar: '+e.message)}
+}
+async function cloudUploadLocal(){
+ if(!cloudSession)return alert('Entre primeiro.');
+ if(!confirm('Enviar dados DESTE navegador vai SUBSTITUIR o conteúdo na nuvem. Confirme apenas após baixar o backup JSON.'))return;
+ try{
+  const remote=await cloudGetState();
+  if(remote&&!confirm('Já existem dados na nuvem. Deseja realmente substituí-los pelo conteúdo deste navegador?'))return;
+  const updated=await authorizedRequest('/rest/v1/beeztro_state?on_conflict=user_id','POST',
+   {user_id:cloudSession.user.id,data:db,updated_at:new Date().toISOString()},
+   {'Prefer':'resolution=merge-duplicates,return=representation'});
+  cloudBaseline=updated?.[0]?.updated_at||null;cloudReady=true;
+  cloudMsg('Dados enviados! Sincronização ativa neste navegador.');
+ }catch(e){cloudMsg('Falha ao enviar: '+e.message+' — dados locais preservados.');alert('Erro ao enviar: '+e.message)}
+}
+async function cloudSave(){
+ if(!cloudReady||!cloudSession)throw Error('Sincronização não está ativa.');
+ const remote=await cloudGetState();
+ if(!remote||!cloudBaseline||remote.updated_at!==cloudBaseline){
+  cloudReady=false;
+  throw Error('CONFLITO: os dados da nuvem mudaram em outro dispositivo. Faça backup JSON antes de carregar ou enviar qualquer coisa.');
+ }
+ const nextDate=new Date().toISOString();
+ const result=await authorizedRequest('/rest/v1/beeztro_state?user_id=eq.'+encodeURIComponent(cloudSession.user.id)+'&updated_at=eq.'+encodeURIComponent(cloudBaseline),'PATCH',
+  {data:db,updated_at:nextDate},{'Prefer':'return=representation'});
+ if(!result?.length){cloudReady=false;throw Error('CONFLITO: outro dispositivo alterou a nuvem. Faça backup JSON e revise antes de sincronizar.');}
+ cloudBaseline=result[0].updated_at;
+}
+function queueCloudSave(){
+ const snapshot=JSON.stringify(db);
+ cloudSaveChain=cloudSaveChain.catch(()=>{}).then(async()=>{
+  if(!cloudReady||!cloudSession)return;
+  cloudMsg('Salvando na nuvem…');
+  try{await cloudSave();cloudMsg('Sincronizado na nuvem.');}
+  catch(e){cloudMsg('Falha ao sincronizar: '+e.message+' — seus dados locais estão preservados.');}
+ });
+ return cloudSaveChain;
+}
+const originalPersist=persist;
+persist=function(){
+ originalPersist();
+ if(!cloudReady||!cloudSession)return;
+ clearTimeout(cloudSaveTimer);
+ cloudMsg('Alterações salvas neste navegador. Enviando à nuvem…');
+ cloudSaveTimer=setTimeout(()=>{cloudSaveTimer=null;queueCloudSave()},900);
+};
+// Sessão fica apenas nesta aba do navegador; os dados das receitas permanecem no armazenamento local.
+try{const saved=sessionStorage.getItem(SESSION_KEY);if(saved)cloudSession=JSON.parse(saved)}catch{cloudSession=null}
+cloudUI();cloudCheckRecovery();
+if(cloudSession){cloudMsg('Sessão recuperada. Verificando conexão…');
+ (async()=>{try{if(isExpired())await refreshSession();const remote=await cloudGetState();
+  cloudMsg(remote?'Conectado. Para retomar a sincronização, clique em “Carregar dados da nuvem” (faça backup local antes).':'Conectado. Nuvem vazia; verifique seus dados antes de enviar.');
+ }catch(e){cloudMsg('Não foi possível renovar a sessão: '+e.message+'. Entre novamente.');cloudSession=null;saveSession();cloudUI()}})();
+}
+</script></body></html>
