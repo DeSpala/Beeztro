@@ -1,8 +1,8 @@
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Beeztrô • Receituário</title><style>
 :root{--bg:#f7f5ee;--paper:#fffdf8;--ink:#243d2e;--muted:#657367;--accent:#d6a53d;--line:#e5e4d8;--green:#355d43}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}header{background:var(--green);color:white;padding:22px max(20px,calc((100vw - 1100px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}h1{font-family:Georgia,serif;font-size:2.3rem;margin:0;letter-spacing:.3px}header small{color:#e8e8d9}main{max-width:1100px;margin:24px auto;padding:0 18px}.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 24px}button,.filebtn{cursor:pointer;border:1px solid var(--line);border-radius:10px;padding:10px 15px;background:white;color:var(--ink);font:inherit}button:hover,.filebtn:hover{border-color:var(--green)}button.primary,.tabs button.active{background:var(--green);color:white;border-color:var(--green)}button.warn{color:#9b302b}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:15px}.card,.panel{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 3px 12px #233e3010}.card h3{margin:0 0 6px;font-family:Georgia,serif;font-size:1.35rem}.sub{color:var(--muted);font-size:.9rem}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.row button{flex:0 0 auto}input,textarea,select{font:inherit;border:1px solid #cbd1c7;border-radius:9px;padding:10px;background:white;color:var(--ink);width:100%}label{display:block;font-size:.9rem;font-weight:650;margin:12px 0 5px}textarea{min-height:110px;resize:vertical}.hidden{display:none!important}.sectiontitle{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:15px}h2{font-family:Georgia,serif;font-size:1.75rem;margin:0}table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}td input{min-width:70px}.scroll{overflow-x:auto}.notice{padding:12px 15px;background:#f6efd7;border-radius:10px;color:#514522;margin:15px 0}.pill{background:#e8eee7;color:#345641;border-radius:20px;padding:3px 9px;font-size:.8rem;display:inline-block;margin:3px 3px 0 0}.stack{display:grid;gap:12px}.right{text-align:right}.small{font-size:.85rem}footer{text-align:center;color:var(--muted);padding:30px} @media(max-width:600px){header{padding:18px}h1{font-size:2rem}.row>*{flex-basis:100%}.row button{flex-basis:auto}td,th{padding:7px 4px;font-size:.9rem}}
-</style></head><body><header><div><h1>Beeztrô <span style="color:#edc96c">✦</span></h1><small>Receitas, cardápios e compras em um só lugar</small></div><span class="small">Versão 0.3 · recuperação</span></header><div id="cloudBar" style="background:#e8eee5;padding:12px 18px;border-bottom:1px solid #cad6c7">
+</style></head><body><header><div><h1>Beeztrô <span style="color:#edc96c">✦</span></h1><small>Receitas, cardápios e compras em um só lugar</small></div><span class="small">Versão 0.4 · sessão e sincronização</span></header><div id="cloudBar" style="background:#e8eee5;padding:12px 18px;border-bottom:1px solid #cad6c7">
  <div style="max-width:1100px;margin:auto">
- <strong>Beeztrô na nuvem · versão 0.3</strong>
+ <strong>Beeztrô na nuvem · versão 0.4</strong>
  <span id="cloudStatus" style="margin-left:12px">Desconectado — seus dados locais continuam preservados.</span>
  <div id="cloudLogin" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
  <input id="cloudEmail" type="email" placeholder="Seu e-mail" style="max-width:240px">
@@ -20,7 +20,7 @@
  <button onclick="cloudUploadLocal()">Enviar dados locais para a nuvem</button>
  <button onclick="cloudSignOut()">Sair</button>
  </div>
- <p style="font-size:12px;margin:6px 0 0">Antes de enviar dados locais, baixe um backup JSON. Não use o arquivo HTML em dispositivos públicos.</p>
+ <p style="font-size:12px;margin:6px 0 0">Faça backup JSON regularmente. Antes de alternar dispositivos, confirme que a sincronização terminou. Não edite simultaneamente em dois dispositivos.</p>
  </div></div><main><div class="tabs"><button class="active" data-tab="recipes">Receituário</button><button data-tab="menus">Cardápios</button><button data-tab="shopping">Compras</button><button data-tab="backup">Importar / Backup</button></div>
 <section id="recipes"><div class="sectiontitle"><h2>Meu receituário</h2><button class="primary" onclick="newRecipe()">+ Nova receita</button></div><input id="search" placeholder="Buscar por nome, categoria ou ingrediente..." oninput="renderRecipes()" aria-label="Buscar receitas"><div id="recipeCards" class="grid" style="margin-top:18px"></div></section>
 <section id="editor" class="hidden"><div class="sectiontitle"><h2 id="editTitle">Nova receita</h2><button onclick="showTab('recipes')">Voltar</button></div><div class="panel"><div class="row"><div><label>Nome da receita</label><input id="rName" required placeholder="Ex.: Chana masala"></div><div><label>Categoria / etiquetas (separadas por vírgula)</label><input id="rTags" placeholder="Vegano, principal, indiano"></div></div><div class="row"><div><label>Rendimento original</label><input id="rYield" type="number" min="0.01" step="any" value="4"></div><div><label>Unidade de rendimento</label><input id="rYieldUnit" placeholder="porções" value="porções"></div></div><label>Ingredientes</label><div class="scroll"><table><thead><tr><th>Ingrediente</th><th>Qtd.</th><th>Unidade</th><th></th></tr></thead><tbody id="ingredients"></tbody></table></div><button onclick="addIngredient()">+ Ingrediente</button><label>Modo de preparo</label><textarea id="rSteps"></textarea><label>Observações / conservação</label><textarea id="rNotes" style="min-height:70px"></textarea><div class="actions"><button class="primary" onclick="saveRecipe()">Salvar receita</button><button onclick="showTab('recipes')">Cancelar</button></div></div></section>
@@ -37,116 +37,156 @@ function normalizeUnit(u){let v=u.trim().toLowerCase();return({kg:['massa',1000,
 
 const CLOUD_URL='https://bguqkcwrrdhnwhrvkwyp.supabase.co';
 const CLOUD_KEY='sb_publishable_PU08gbtSGQKq39rYLjZS8A_plCE_vbW';
-let cloudSession=null,cloudBusy=false,cloudReady=false,recoveryToken=null;
-function cloudMsg(msg){document.getElementById('cloudStatus').textContent=msg}
-function cloudHeaders(token){return {'apikey':CLOUD_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'}}
-async function cloudRequest(path,method='GET',body=null,token=null){
- const res=await fetch(CLOUD_URL+path,{method,headers:cloudHeaders(token||CLOUD_KEY),...(body===null?{}:{body:JSON.stringify(body)})});
+const SESSION_KEY='beeztro-session-v04';
+let cloudSession=null,cloudReady=false,recoveryToken=null,cloudBaseline=null;
+let cloudSaveTimer=null,cloudSaveChain=Promise.resolve(),refreshPromise=null;
+const el=id=>document.getElementById(id);
+function cloudMsg(message){el('cloudStatus').textContent=message}
+function cloudHeaders(token,extra={}){return {'apikey':CLOUD_KEY,'Authorization':'Bearer '+(token||CLOUD_KEY),'Content-Type':'application/json',...extra}}
+async function cloudRequest(path,method='GET',body=null,token=null,extraHeaders={}){
+ const res=await fetch(CLOUD_URL+path,{method,headers:cloudHeaders(token,extraHeaders),...(body===null?{}:{body:JSON.stringify(body)})});
  const txt=await res.text();let data;try{data=txt?JSON.parse(txt):null}catch{data=txt}
- if(!res.ok)throw Error(data?.msg||data?.message||data?.error_description||data?.error||'Erro HTTP '+res.status);
+ if(!res.ok){const error=new Error(data?.msg||data?.message||data?.error_description||data?.error||'Erro HTTP '+res.status);error.status=res.status;throw error}
  return data;
 }
+function saveSession(){try{if(cloudSession)sessionStorage.setItem(SESSION_KEY,JSON.stringify(cloudSession));else sessionStorage.removeItem(SESSION_KEY)}catch{}}
+function cloudUI(){
+ el('cloudLogin').style.display=cloudSession?'none':'flex';
+ el('cloudActions').style.display=cloudSession?'flex':'none';
+ if(!cloudSession)cloudMsg('Desconectado — receitas deste navegador preservadas.');
+}
+function isExpired(){return !cloudSession?.access_token||!cloudSession.expires_at||Date.now()/1000>=Number(cloudSession.expires_at)-120}
+async function refreshSession(){
+ if(refreshPromise)return refreshPromise;
+ refreshPromise=(async()=>{
+  if(!cloudSession?.refresh_token)throw Error('Sessão encerrada. Entre novamente.');
+  const d=await cloudRequest('/auth/v1/token?grant_type=refresh_token','POST',{refresh_token:cloudSession.refresh_token});
+  cloudSession={...cloudSession,...d,expires_at:d.expires_at||(Math.floor(Date.now()/1000)+d.expires_in)};
+  saveSession();return cloudSession.access_token;
+ })();
+ try{return await refreshPromise}finally{refreshPromise=null}
+}
+async function authorizedRequest(path,method='GET',body=null,extraHeaders={}){
+ if(!cloudSession)throw Error('Entre na sua conta primeiro.');
+ if(isExpired())await refreshSession();
+ try{return await cloudRequest(path,method,body,cloudSession.access_token,extraHeaders)}
+ catch(e){if(e.status===401||/jwt expired|invalid jwt/i.test(e.message)){await refreshSession();return cloudRequest(path,method,body,cloudSession.access_token,extraHeaders)}throw e}
+}
 async function cloudForgotPassword(){
- const email=document.getElementById('cloudEmail').value.trim();
- if(!email)return alert('Digite seu e-mail no campo acima.');
- try{
-  await cloudRequest('/auth/v1/recover','POST',{email});
-  alert('Se esse e-mail estiver cadastrado, você receberá um link de recuperação. Confira também o spam.');
- }catch(e){alert('Não foi possível solicitar a recuperação: '+e.message)}
+ const email=el('cloudEmail').value.trim();if(!email)return alert('Digite seu e-mail no campo acima.');
+ try{await cloudRequest('/auth/v1/recover','POST',{email});alert('Se esse e-mail estiver cadastrado, você receberá um link de recuperação. Confira também o spam.')}
+ catch(e){alert('Não foi possível solicitar a recuperação: '+e.message)}
 }
 function cloudCheckRecovery(){
- const hash=new URLSearchParams(location.hash.slice(1));
- const query=new URLSearchParams(location.search);
- if(hash.get('type')==='recovery' && hash.get('access_token')){
-  recoveryToken=hash.get('access_token');
-  // Apaga imediatamente os tokens da barra de endereço e do histórico visível.
-  history.replaceState(null,'',location.pathname);
-  document.getElementById('cloudRecovery').classList.remove('hidden');
-  document.getElementById('cloudLogin').classList.add('hidden');
-  cloudMsg('Link de recuperação reconhecido. Crie uma nova senha abaixo.');
+ const hash=new URLSearchParams(location.hash.slice(1)),query=new URLSearchParams(location.search);
+ if(hash.get('type')==='recovery'&&hash.get('access_token')){
+  recoveryToken=hash.get('access_token');history.replaceState(null,'',location.pathname);
+  el('cloudRecovery').classList.remove('hidden');el('cloudLogin').classList.add('hidden');
+  cloudMsg('Link de recuperação reconhecido. Crie sua nova senha abaixo.');
  }else if(hash.get('error')||query.get('error')){
-  const description=hash.get('error_description')||query.get('error_description')||'Link inválido ou expirado.';
-  history.replaceState(null,'',location.pathname);
-  cloudMsg('Não foi possível usar o link: '+description.replaceAll('+',' '));
+  const desc=hash.get('error_description')||query.get('error_description')||'Link inválido ou expirado.';
+  history.replaceState(null,'',location.pathname);cloudMsg('Não foi possível usar o link: '+desc.replaceAll('+',' '));
  }
 }
 async function cloudChangePassword(){
- const password=document.getElementById('recoveryPassword').value;
- const confirmPassword=document.getElementById('recoveryConfirm').value;
+ const password=el('recoveryPassword').value,confirmation=el('recoveryConfirm').value;
  if(password.length<8)return alert('A nova senha precisa ter pelo menos 8 caracteres.');
- if(password!==confirmPassword)return alert('As duas senhas não coincidem.');
- if(!recoveryToken)return alert('O link de recuperação não está ativo. Solicite outro.');
+ if(password!==confirmation)return alert('As senhas não coincidem.');
+ if(!recoveryToken)return alert('Link de recuperação não está ativo. Solicite outro.');
  try{
-  await cloudRequest('/auth/v1/user','PUT',{password},recoveryToken);
-  // Revoga o token de atualização dessa sessão, quando disponível, após troca.
-  recoveryToken=null;
-  document.getElementById('recoveryPassword').value='';
-  document.getElementById('recoveryConfirm').value='';
-  document.getElementById('cloudRecovery').classList.add('hidden');
-  document.getElementById('cloudLogin').classList.remove('hidden');
-  cloudMsg('Senha alterada! Agora entre com seu e-mail e sua nova senha.');
-  alert('Senha alterada com sucesso! Faça login com sua nova senha.');
+  await cloudRequest('/auth/v1/user','PUT',{password},recoveryToken);recoveryToken=null;
+  el('recoveryPassword').value='';el('recoveryConfirm').value='';
+  el('cloudRecovery').classList.add('hidden');el('cloudLogin').classList.remove('hidden');
+  cloudMsg('Senha alterada! Entre com seu e-mail e sua nova senha.');alert('Senha alterada. Faça login com sua nova senha.');
  }catch(e){alert('Não foi possível alterar a senha: '+e.message)}
 }
 async function cloudSignUp(){
- let email=document.getElementById('cloudEmail').value.trim(),password=document.getElementById('cloudPassword').value;
- if(!email||password.length<8)return alert('Informe e-mail e uma senha com pelo menos 8 caracteres.');
- try{await cloudRequest('/auth/v1/signup','POST',{email,password});alert('Cadastro solicitado. Verifique seu e-mail para confirmar a conta; depois clique em Entrar.')}catch(e){alert(e.message)}
+ const email=el('cloudEmail').value.trim(),password=el('cloudPassword').value;
+ if(!email||password.length<8)return alert('Informe e-mail e senha com pelo menos 8 caracteres.');
+ try{await cloudRequest('/auth/v1/signup','POST',{email,password});alert('Cadastro solicitado. Verifique seu e-mail para confirmar a conta.')}
+ catch(e){alert('Erro ao cadastrar: '+e.message)}
 }
 async function cloudSignIn(){
- let email=document.getElementById('cloudEmail').value.trim(),password=document.getElementById('cloudPassword').value;
+ const email=el('cloudEmail').value.trim(),password=el('cloudPassword').value;
  try{
   const d=await cloudRequest('/auth/v1/token?grant_type=password','POST',{email,password});
-  cloudSession=d;cloudReady=false;cloudUI();
-  const exists=await cloudGetState();
-  if(exists){cloudMsg('Conectado. Dados disponíveis na nuvem. Clique em “Carregar dados da nuvem” para substituir os dados exibidos neste navegador.')}
-  else cloudMsg('Conectado. Nuvem vazia: clique em “Enviar dados locais para a nuvem” para migrar seu receituário.');
+  cloudSession={...d,expires_at:d.expires_at||(Math.floor(Date.now()/1000)+d.expires_in)};
+  saveSession();cloudReady=false;cloudBaseline=null;cloudUI();el('cloudPassword').value='';
+  const remote=await cloudGetState();
+  cloudMsg(remote?'Conectado. Há dados na nuvem. Clique em “Carregar dados da nuvem” antes de editar neste dispositivo.':'Conectado. Nuvem vazia. Faça backup JSON e use “Enviar dados locais para a nuvem”.');
  }catch(e){alert('Não foi possível entrar: '+e.message)}
 }
-function cloudUI(){
- document.getElementById('cloudLogin').style.display=cloudSession?'none':'flex';
- document.getElementById('cloudActions').style.display=cloudSession?'flex':'none';
- if(!cloudSession)cloudMsg('Desconectado — dados locais preservados.');
+async function cloudSignOut(){
+ if(cloudReady&&cloudSaveTimer){clearTimeout(cloudSaveTimer);cloudSaveTimer=null;await queueCloudSave()}
+ if(cloudSession){try{await authorizedRequest('/auth/v1/logout','POST',{})}catch(e){console.warn('Não foi possível revogar a sessão no servidor:',e.message)}}
+ cloudSession=null;cloudReady=false;cloudBaseline=null;saveSession();cloudUI();
 }
-async function cloudSignOut(){cloudSession=null;cloudReady=false;cloudUI()}
 async function cloudGetState(){
- if(!cloudSession)throw Error('Entre primeiro.');
- const data=await cloudRequest('/rest/v1/beeztro_state?select=data&user_id=eq.'+encodeURIComponent(cloudSession.user.id),'GET',null,cloudSession.access_token);
- return data?.[0]?.data||null;
+ const data=await authorizedRequest('/rest/v1/beeztro_state?select=data,updated_at&user_id=eq.'+encodeURIComponent(cloudSession.user.id));
+ return data?.[0]||null;
 }
+function sameData(a,b){return JSON.stringify(a)===JSON.stringify(b)}
 async function cloudLoad(){
  try{
-  const incoming=await cloudGetState();
-  if(!incoming)return alert('Ainda não há dados na nuvem. Use “Enviar dados locais”.');
-  if(!Array.isArray(incoming.recipes)||!Array.isArray(incoming.menus))throw Error('Dados da nuvem inválidos.');
-  if(!confirm('Carregar dados da nuvem vai substituir os dados exibidos neste navegador. Você já baixou o backup JSON?'))return;
-  db=incoming;localStorage.setItem(KEY,JSON.stringify(db));cloudReady=true;showTab('recipes');cloudMsg('Sincronização ativa. Alterações serão enviadas à nuvem.');
- }catch(e){alert('Erro ao carregar: '+e.message)}
+  const remote=await cloudGetState();if(!remote)return alert('Ainda não há dados na nuvem.');
+  if(!Array.isArray(remote.data?.recipes)||!Array.isArray(remote.data?.menus))throw Error('Dados da nuvem inválidos.');
+  if(!confirm('Isso SUBSTITUI as receitas deste navegador. Você já baixou um backup JSON?'))return;
+  clearTimeout(cloudSaveTimer);cloudSaveTimer=null;
+  db=remote.data;localStorage.setItem(KEY,JSON.stringify(db));
+  cloudBaseline=remote.updated_at;cloudReady=true;showTab('recipes');
+  cloudMsg('Dados carregados. Sincronização ativa; alterações serão enviadas à nuvem.');
+ }catch(e){cloudMsg('Falha ao carregar: '+e.message);alert('Erro ao carregar: '+e.message)}
 }
 async function cloudUploadLocal(){
  if(!cloudSession)return alert('Entre primeiro.');
- if(!confirm('Enviar o receituário DESTE navegador para a nuvem? Isso substituirá o conteúdo que estiver lá. Confirme que salvou seu backup JSON.'))return;
- try{await cloudSave();cloudReady=true;cloudMsg('Dados enviados! Sincronização ativa neste navegador.')}
- catch(e){alert('Erro ao enviar: '+e.message)}
+ if(!confirm('Enviar dados DESTE navegador vai SUBSTITUIR o conteúdo na nuvem. Confirme apenas após baixar o backup JSON.'))return;
+ try{
+  const remote=await cloudGetState();
+  if(remote&&!confirm('Já existem dados na nuvem. Deseja realmente substituí-los pelo conteúdo deste navegador?'))return;
+  const updated=await authorizedRequest('/rest/v1/beeztro_state?on_conflict=user_id','POST',
+   {user_id:cloudSession.user.id,data:db,updated_at:new Date().toISOString()},
+   {'Prefer':'resolution=merge-duplicates,return=representation'});
+  cloudBaseline=updated?.[0]?.updated_at||null;cloudReady=true;
+  cloudMsg('Dados enviados! Sincronização ativa neste navegador.');
+ }catch(e){cloudMsg('Falha ao enviar: '+e.message+' — dados locais preservados.');alert('Erro ao enviar: '+e.message)}
 }
 async function cloudSave(){
- if(!cloudSession)throw Error('Faça login.');
- await cloudRequest('/rest/v1/beeztro_state?on_conflict=user_id','POST',
- {user_id:cloudSession.user.id,data:db,updated_at:new Date().toISOString()},
- cloudSession.access_token);
+ if(!cloudReady||!cloudSession)throw Error('Sincronização não está ativa.');
+ const remote=await cloudGetState();
+ if(!remote||!cloudBaseline||remote.updated_at!==cloudBaseline){
+  cloudReady=false;
+  throw Error('CONFLITO: os dados da nuvem mudaram em outro dispositivo. Faça backup JSON antes de carregar ou enviar qualquer coisa.');
+ }
+ const nextDate=new Date().toISOString();
+ const result=await authorizedRequest('/rest/v1/beeztro_state?user_id=eq.'+encodeURIComponent(cloudSession.user.id)+'&updated_at=eq.'+encodeURIComponent(cloudBaseline),'PATCH',
+  {data:db,updated_at:nextDate},{'Prefer':'return=representation'});
+ if(!result?.length){cloudReady=false;throw Error('CONFLITO: outro dispositivo alterou a nuvem. Faça backup JSON e revise antes de sincronizar.');}
+ cloudBaseline=result[0].updated_at;
 }
-let cloudSaveTimer;
+function queueCloudSave(){
+ const snapshot=JSON.stringify(db);
+ cloudSaveChain=cloudSaveChain.catch(()=>{}).then(async()=>{
+  if(!cloudReady||!cloudSession)return;
+  cloudMsg('Salvando na nuvem…');
+  try{await cloudSave();cloudMsg('Sincronizado na nuvem.');}
+  catch(e){cloudMsg('Falha ao sincronizar: '+e.message+' — seus dados locais estão preservados.');}
+ });
+ return cloudSaveChain;
+}
 const originalPersist=persist;
 persist=function(){
  originalPersist();
  if(!cloudReady||!cloudSession)return;
  clearTimeout(cloudSaveTimer);
- cloudMsg('Salvando na nuvem…');
- cloudSaveTimer=setTimeout(async()=>{
-  try{await cloudSave();cloudMsg('Sincronizado na nuvem.')}
-  catch(e){cloudMsg('Falha ao sincronizar: '+e.message+' — exporte um backup JSON.')}
- },700);
+ cloudMsg('Alterações salvas neste navegador. Enviando à nuvem…');
+ cloudSaveTimer=setTimeout(()=>{cloudSaveTimer=null;queueCloudSave()},900);
 };
-cloudUI();
-cloudCheckRecovery();
+// Sessão fica apenas nesta aba do navegador; os dados das receitas permanecem no armazenamento local.
+try{const saved=sessionStorage.getItem(SESSION_KEY);if(saved)cloudSession=JSON.parse(saved)}catch{cloudSession=null}
+cloudUI();cloudCheckRecovery();
+if(cloudSession){cloudMsg('Sessão recuperada. Verificando conexão…');
+ (async()=>{try{if(isExpired())await refreshSession();const remote=await cloudGetState();
+  cloudMsg(remote?'Conectado. Para retomar a sincronização, clique em “Carregar dados da nuvem” (faça backup local antes).':'Conectado. Nuvem vazia; verifique seus dados antes de enviar.');
+ }catch(e){cloudMsg('Não foi possível renovar a sessão: '+e.message+'. Entre novamente.');cloudSession=null;saveSession();cloudUI()}})();
+}
 </script></body></html>
